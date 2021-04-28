@@ -1,0 +1,13 @@
+Contributions:
+-----------------------------
+
+Jamahl:
+- Created the flask API that the COVID Passport Service runs on.
+- Created the html files that COVID Passport Service uses for rendering webpages
+- Setup the repository
+-
+
+Chance:
+-
+-
+-

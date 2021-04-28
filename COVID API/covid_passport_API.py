@@ -21,7 +21,22 @@ app.secret_key = os.urandom(16).hex()
 
 #dictionary holding the users for the API
 users = {
-    "admin" : generate_password_hash("secret"),
+    "admin" : {"PW" : generate_password_hash("secret"), 
+                "FN" : "Bob", 
+                "MI" : "I.",
+                "LN" : "Simpson",
+                "DOB" : "N/A",
+                "Prod1" : "Moderna",
+                "DR1" : "N/A",
+                "Site1" : "NRHC",
+                "Prod2" : "Moderna",
+                "DR2" : "N/A",
+                "Site2" : "NRHC",
+                "Notes" : "This is filler!"},
+}
+
+administrators = {
+    "Jamahl" : generate_password_hash("Secret")
 }
 
 
@@ -29,54 +44,146 @@ users = {
 def login():
     error = None
 
-    if(request.method == 'POST'):
+    if(not session.get('user')):
+        if(request.method == 'POST'):
 
-        if(request.form.get("facial login")):
-            return redirect('/login-facial')
+            if(request.form.get("QR login")):
+                return redirect('/login-QR')
+            
+            elif(request.form.get("General Email")):
+                return redirect('/get-help/')
 
-        elif(request.form.get("login")):
-            username = request.form.get("user")
-            password = request.form.get("passw")
+            elif(request.form.get("login")):
+                username = request.form.get("user")
+                password = request.form.get("passw")
 
-            if username in users and check_password_hash(users.get(username), password):
-                session["user"] = username
-                flash('You were successfully logged in!')
-                return redirect(f'/dashboard/{username}')
-            else:
-                error = 'Invalid username or password. Please try again!'
+                if (username in users and check_password_hash(users.get(username).get("PW"), password)):
+                    session["user"] = username
+                    flash('You were successfully logged in!')
+                    return redirect(f'/user-dashboard/{username}')
+                elif(username in administrators and check_password_hash(administrators.get(username), password)):
+                    session["user"] = username
+                    flash('You were successfully logged in!')
+                    return redirect(f'/admin-dashboard/')
+                else:
+                    error = 'Invalid username or password. Please try again!'
 
-    return render_template('login.html', error = error)
+        return render_template('login.html', error = error)
+    else:
+        if('user' in session and session['user'] in administrators.keys()):
+            return redirect(f'/admin-dashboard/')
 
-@app.route('/login-facial', methods = ['POST', 'GET']) #if the user fails the facial, they get redirected to the main login page
-def detect_face():
-    return f"""<h1> Welcome to facial login!</h1> """
+        elif('user' in session and session['user'] in users.keys()):
+            username = session['user']
+            return redirect(f'/user-dashboard/{username}')
 
-@app.route('/dashboard/<username>', methods = ['POST', 'GET']) #The main dashboard for after successfully logging in
+
+@app.route('/login-QR', methods = ['POST', 'GET']) #User can choose to be redirected back to the login screen if they no longer want to scan QR code
+def detect_QR():
+    error = None
+    #flash message when Qr is detected
+    #send error when Qr code is wrong
+    return render_template('scan_qr.html', error = error)
+
+@app.route('/display-passport', methods = ['POST', 'GET'])#If user passed the qr code scanner, their passport is displayed
+def display_users_QR():
+    #have option to return back to login screen
+    return render_template('display_qr_passport.html', value = "Temp User")
+
+@app.route('/user-dashboard/<username>', methods = ['POST', 'GET']) #The main dashboard for after successfully logging in
 def dashboard(username):
+    #dashboard will also show current covid statistics
     if(not session.get('user')):
         return redirect('/')
-        
+    
     return render_template('dashboard.html', value = username)
+    
 
-@app.route('/newUser', methods = ['POST', 'GET']) #for creating a new account
+@app.route('/admin-dashboard/', methods = ['POST', 'GET']) #The main dashboard for after successfully logging in (for admins)
+def admin_dashboard():
+    
+    if(not session.get('user')):
+        return redirect('/')
+    return render_template('admin_dashboard.html')
+    
+
+@app.route('/admin-add-user/', methods = ['POST', 'GET']) #for creating a new account with an associated QR code (Only admins can do this)
 def newUser():
-    return "<h1> Create a new account </h1>"
+    if(not session.get('user')):
+        return redirect('/')
 
-@app.route('/passport-info/<username>', methods = ['POST', 'GET']) #for users to see their passport information
+    return render_template('admin_new_user.html')
+
+@app.route('/passport-info/<username>', methods = ['POST', 'GET']) #for users to see their passport information while logged in
 def display_info(username):
-     return "<h1> Display users' passport information</h1>"
+    if(not session.get('user')):
+        return redirect('/')
 
-@app.route('/update', methods = ['POST', 'GET']) #for users to update their information and then return back to the dashboard
+    return render_template('check_passport.html', value = username)
+
+@app.route('/change-password/<username>', methods = ['POST', 'GET']) #for users to see their passport information
+def change_password(username):
+    #if old password doesn't match before assigning new password then send an error
+    #if new password is the same as the old password, then send error about it
+    error = None
+
+    if(not session.get('user')):
+        return redirect('/')
+
+    return render_template('new_password.html', value = username, error = error )
+
+@app.route('/admin-update/', methods = ['POST', 'GET']) #for admin to update a user's information
 def update_info():
-     return "<h1> Allow users to update information for passport </h1>"
+    #if admin updates username then go ahead and delete the old user but copy the data over 
+    if(not session.get('user')):
+        return redirect('/')
 
-@app.route('/register-facial', methods = ['POST', 'GET']) #register users' faces (User must have credentials first!)
-def register_facial():
-     return "<h1> Register new faces here </h1>"
+    return render_template('admin_update_user.html')
 
-@app.route('/covid-map', methods = ['POST', 'GET'])
-def show_covid_stats():
-     return "<h1>Display a live covid map here </h1>"
+@app.route('/admin-delete/', methods = ['POST', 'GET']) #for admins to delete a user from the system
+def delete_user():
+    if(not session.get('user')):
+        return redirect('/')
+
+    return render_template('admin_delete_user.html')
+
+@app.route('/admin-search/', methods = ['POST', 'GET']) #for admins to search for a user and display them in the system
+def search_user():
+    error = None
+    #send error if user not found
+    if(not session.get('user')):
+        return redirect('/')
+
+    return render_template('admin_search_users.html', error = error)
+
+
+@app.route('/new-QR/<username>', methods = ['POST', 'GET']) #register users' new QR code (User must have credentials first!)
+def new_QR(username):
+    if(not session.get('user')):
+        return redirect('/')
+
+    return render_template('generate_qr.html', value = username)
+
+@app.route('/send-issue/<username>', methods = ['POST', 'GET']) #Users can send an email to the admin
+def user_send_email(username):
+    msg = None
+
+    if(not session.get('user')):
+        return redirect('/')
+    
+    return render_template('send_issue.html', value = username, msg = msg)
+
+@app.route('/get-help/', methods = ['POST', 'GET']) #Users can send an email to the admin
+def send_help_email():
+    msg = None
+    
+    return render_template('get_help.html', msg = msg)
+
+
+@app.route('/logout', methods = ['POST', 'GET'])
+def logout():
+    session.pop('user') 
+    return render_template('logout.html')
 
 
 

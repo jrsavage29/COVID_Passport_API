@@ -26,7 +26,7 @@
             
             <a class = "navbar-brand" href = "http://localhost:3000/user-dashboard/{{value}}"> CPS </a>
             <ul class="navbar-nav">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="http://localhost:3000/user-dashboard/{{value}}">Home</a>
                 </li>
                 <li class="nav-item">
@@ -35,7 +35,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="http://localhost:3000/change-password/{{value}}">Change Password</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link " href="http://localhost:3000/new-QR/{{value}}"> Generate New QR Code </a>
                 </li>
             </ul>
@@ -50,16 +50,17 @@
             </ul>
         </nav>
 
-
-        <div class = "container ">
-            {% for message in get_flashed_messages() %}
-            <div class = "alert alert-success alert-dismissible fade show">
+        <div class = "container">
+            {% if error %}
+            <div class = "alert alert-danger alert-dismissible ">
                 <button type = "button" class="close" data-dismiss = "alert">&times;</button>
-                {{ message }}
-            </div> 
-            {% endfor %}
+                {{error}}
+            </div>
+            {% endif %}
         </div>
-        <h1 class = "text-center"> Welcome User <b>{{value}}</b> To Your Dashboard </h1>
+        
+        <h1 class = "text-center"> Generate New QR Code </h1>
+        <h2 class = "text-center"> <b>***WARNING***</b> This Will Replace Your Current QR Code</h2>
 
     </body>
 </html>
