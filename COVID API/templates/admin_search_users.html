@@ -61,7 +61,27 @@
             {% endif %}
         </div>
         
-        <h1 class = "text-center"> Welcome To The Admin Dashboard for Searching Users </h1>
+        <h1 class = "text-center"> Welcome To The Admin Dashboard For Searching Users </h1>
+        <br>
+
+        <div class = "container-fluid text-left" >
+            <form id = "SearchUser" action = "http://localhost:3000/admin-search/" method = "post">
+                <li class= "list-group-item" style = "background-color:#cc99ff;">
+                    <h2> <b>Who Do You Want To Search For?</b> </h2>
+                    <br>
+                    <label for = "search_userName"> <b> Username Search: </b> </label>
+                    <input type = "text" id = "search_userName" name = "query_user" placeholder = "Username">
+                    <br>
+                    <br>
+                    <label for = "admincheck"> <b> Search Admins? </b> </label>
+                    <input type = "checkbox" id = "admincheck" name = "searchAdmin" value = "searchAdmin">
+                    <br>
+                    <input type = "submit" name = "search" value = "Search">
+                    <input type = "reset" value = "Reset Form">
+                </li>
+                
+            </form>
+        </div>
 
     </body>
 </html>

@@ -22,10 +22,22 @@
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
+        <nav class="navbar navbar-expand-sm navbar-light" style = "background-color:#e3f2fd;">
+            
+            <a class = "navbar-brand" href = "#"> CPS </a>
+            
+            <ul class = "navbar-nav ml-auto">
+                <li class = "nav-item">
+                    <a style = "color:black" class = "nav-link " href = "http://localhost:3000/"><span class = "fas fa-sign-in-alt"></span> Log In </a>
+                </li>
+            <ul>
+
+            </ul>
+        </nav>
 
         <div class = "container">
             {% if msg %}
-            <div class = "alert alert-danger alert-dismissible ">
+            <div class = "alert alert-success alert-dismissible fade show">
                 <button type = "button" class="close" data-dismiss = "alert">&times;</button>
                 {{msg}}
             </div>
@@ -33,6 +45,40 @@
         </div>
         
         <h1 class = "text-center"> Need Help With Something? Email Us Your Issue. </h1>
+
+        <div class = "container-fluid text-left" >
+            <form id = "AddUser" action = "http://localhost:3000/get-help/" method = "post">
+                <li class= "list-group-item" style = "background-color:#cc99ff">
+                    <h2><b>Enter Your Contact Info:</b></h2>
+                    <br>
+                    <label for = "firstname"> <b> First Name: </b></label>
+                    <input type = "text" id = "firstname" name = "fname" placeholder = "First Name">
+                    
+                    <label for = "lastname"> <b> Last Name: </b></label>
+                    <input type = "text" id = "lastname" name = "lname" placeholder = "Last Name">
+                    <br>
+                    <br>
+                    <label for = "Username"> <b> Your Username: </b></label>
+                    <input type = "text" id = "Username" name = "user" placeholder = "Username">
+                    <br>
+                    <br>
+                    <label for = "emailaddress"> <b> Your Email: </b></label>
+                    <input type = "text" id = "emailaddress" name = "email" size = "40" placeholder = "e.g. example@gmail.com">
+                    <br>
+                    <br>
+                    <label for = "Message"> <b> Message: </b></label>
+                    <br>
+                    <textarea  id = "Message" name = "msg" rows = "6" cols ="80" placeholder = "Enter your message here..."></textarea>
+                    <br>
+                    <br>
+                    <input type = "submit" name = "send" value = "Submit Email">
+                    <input type = "reset" value = "Reset Form">
+
+                </li>
+                <br>
+                
+            </form>
+        </div>
 
     </body>
 </html>

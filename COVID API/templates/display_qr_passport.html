@@ -22,6 +22,19 @@
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
+        <nav class="navbar navbar-expand-sm navbar-light" style = "background-color:#e3f2fd;">
+            
+            <a class = "navbar-brand" href = "#"> CPS </a>
+            
+            <ul class = "navbar-nav ml-auto">
+                <li class = "nav-item">
+                    <a style = "color:black" class = "nav-link " href = "http://localhost:3000/"><span class = "fas fa-sign-in-alt"></span> Log In </a>
+                </li>
+            <ul>
+
+            </ul>
+        </nav>
+
         <div class = "container ">
             {% for message in get_flashed_messages() %}
             <div class = "alert alert-success alert-dismissible fade show">
@@ -31,7 +44,41 @@
             {% endfor %}
         </div>
         
-        <h1 class = "text-center"> This is User <b>{{value}}</b> Passport Information </h1>
+        <h1 class = "text-center"> Your COVID Passport Information </h1>
+
+    <!--<div class = "container-fluid text-left" >
+            <li class= "list-group-item" style = "background-color:#cc99ff">
+                <h2><b> User Basic Information:</b></h2>
+                <br>
+                <p> <b> First Name: </b> {{user_info["FN"]}} &ensp; <b> Middle Initial: </b> {{user_info["MI"]}} &ensp; <b> Last Name: </b> {{user_info["LN"]}}</p>
+                <br>
+                <p> <b> Date of Birth: </b> {{user_info["DOB"]}} </p>
+                <br>
+            </li>
+            <li class= "list-group-item" style = "background-color:#cc99ff">
+                <h2> <b> 1st Dose Vaccination Info:</b> </h2>
+                <br>
+                <p> <b> Product Name/ Manufacturer: </b>  {{user_info["Prod1"]}} &ensp; <b> Date Received: </b> {{user_info["DR1"]}} </p>
+                <br>
+                <p> <b> Healthcare Professional or Clinic Site: </b> {{user_info["Site1"]}} </p>
+                <br>
+            </li>
+            <li class= "list-group-item" style = "background-color:#cc99ff">
+                <h2> <b> 2nd Dose Vaccination Info:</b> </h2>
+                <br>
+                <p> <b> Product Name/ Manufacturer: </b>  {{user_info["Prod2"]}} &ensp; <b> Date Received: </b> {{user_info["DR2"]}} </p>
+                <br>
+                <p> <b> Healthcare Professional or Clinic Site: </b> {{user_info["Site2"]}} </p>
+                <br>
+            </li>
+            <li class= "list-group-item" style = "background-color:#cc99ff">
+                <p><b> Notes: </b></p>
+                <br>
+                <p> {{user_info["Notes"]}} </p>
+            </li>
+            
+            <br>
+        </div> -->
 
     </body>
 </html>

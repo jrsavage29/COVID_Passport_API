@@ -61,7 +61,33 @@
             {% endif %}
         </div>
         
-        <h1 class = "text-center"> Welcome To The Admin Dashboard Delete User </h1>
+        <h1 class = "text-center"> Welcome To The Admin Dashboard For Deleting Users </h1>
+        <br>
+
+        <div class = "container-fluid text-left" >
+            <form id = "DeleteUser" action = "http://localhost:3000/admin-delete/" method = "post">
+                <li class= "list-group-item" style = "background-color:#cc99ff;">
+                    <h2> <b>Who Do You Want To Delete?</b> </h2>
+                    <br>
+                    <label for = "search_userName"> <b> Username Search: </b> </label>
+                    <input type = "text" id = "search_userName" name = "query_user" placeholder = "Username">
+                    <br>
+                </li>
+                
+                <li class= "list-group-item text-left" style = "background-color:#cc99ff">
+                    <h3 > <span style = "background-color:yellow;"><b>***WARNING***</b> Submission To Deletion Is Final!</span></h3>
+                    <br>
+                    <label for = "admincheck"> <b> Deleting An Admin? </b> </label>
+                    <input type = "checkbox" id = "admincheck" name = "deleteAdmin" value = "Delete Admin">
+                    <br>
+                    <input type = "submit" name = "delete" value = "Delete User">
+                    <input type = "reset" value = "Reset Form">
+                    
+                </li>
+                <br>
+                
+            </form>
+        </div>
 
     </body>
 </html>

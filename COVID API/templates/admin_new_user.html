@@ -60,8 +60,17 @@
             </div>
             {% endif %}
         </div>
+
+        <div class = "container">
+            {% if success %}
+            <div class = "alert alert-success alert-dismissible ">
+                <button type = "button" class="close" data-dismiss = "alert">&times;</button>
+                {{success}}
+            </div>
+            {% endif %}
+        </div>
         
-        <h1 class = "text-center"> Welcome To The Admin Dashboard Add New User </h1>
+        <h1 class = "text-center"> Welcome To The Admin Dashboard For Adding New Users </h1>
 
         <div class = "container-fluid text-left" >
             <form id = "AddUser" action = "http://localhost:3000/admin-add-user/" method = "post">
@@ -99,6 +108,7 @@
                     <label for = "datereceived1"> <b> Date Received: </b></label>
                     <input type = "date" id = "datereceived1" name = "dr1" >
                     <br>
+                    <br>
                     <label for = "location1"> <b> Healthcare Professional or Clinic Site: </b></label>
                     <input type = "text" id = "location1" name = "site1" placeholder = "Enter Location">
                     <br>
@@ -113,6 +123,7 @@
                     <label for = "datereceived2"> <b> Date Received: </b></label>
                     <input type = "date" id = "datereceived2" name = "dr2" >
                     <br>
+                    <br>
                     <label for = "location2"> <b> Healthcare Professional or Clinic Site: </b></label>
                     <input type = "text" id = "location2" name = "site2" placeholder = "Enter Location">
                     <br>
@@ -125,8 +136,13 @@
                 </li>
                 
                 <li class= "list-group-item text-right" style = "background-color:#cc99ff">
-                    <input type = "submit" name = "login" value = "Log In">
-                    <input type = "reset">
+                    <label for = "admincheck"> <b> Set As An Admin? </b> </label>
+                    <input type = "checkbox" id = "admincheck" name = "MakeAdmin" value = "New Admin">
+                    <br>
+                    <input type = "submit" name = "add" value = "Add To Service">
+                    <input type = "reset" value = "Reset Form">
+                    <br>
+                    <p><span style = "background-color:yellow;"><b>Note*</b> If Adding An Admin, Only Basic Information Fields Are Required.</span></p>
                 </li>
                 <br>
                 

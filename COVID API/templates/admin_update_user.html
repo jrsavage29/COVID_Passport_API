@@ -60,11 +60,20 @@
             </div>
             {% endif %}
         </div>
+
+        <div class = "container">
+            {% if success %}
+            <div class = "alert alert-success alert-dismissible ">
+                <button type = "button" class="close" data-dismiss = "alert">&times;</button>
+                {{success}}
+            </div>
+            {% endif %}
+        </div>
         
-        <h1 class = "text-center"> Welcome To The Admin Dashboard for Updating Users </h1>
+        <h1 class = "text-center"> Welcome To The Admin Dashboard For Updating Users </h1>
 
         <div class = "container-fluid text-left" >
-            <form id = "AddUser" action = "http://localhost:3000/admin-update/" method = "post">
+            <form id = "UpdateUser" action = "http://localhost:3000/admin-update/" method = "post">
                 <li class= "list-group-item" style = "background-color:#cc99ff">
                     <h2> <b>Who's Information Are You Trying To Update?</b> </h2>
                     <br>
@@ -88,10 +97,7 @@
                     <label for = "DOB"> <b> <i>Update</i> Date of Birth: </b></label>
                     <input type = "date" id = "DOB" name = "dob">
                     <br>
-                    <br>
-                    <label for = "new_userName"> <b> <i>Update</i> Username: </b> </label>
-                    <input type = "text" id = "new_userName" name = "new_user" placeholder = "New Username">
-                    
+                    <br>                    
                     <label for = "new_passWord"> <b> <i>Update</i> Password: </b></label>
                     <input type = "text" id = "new_passWord" name = "new_passw" placeholder = "New Password">
                     <br>
@@ -105,6 +111,7 @@
                     
                     <label for = "datereceived1"> <b> <i>Update</i> Date Received: </b></label>
                     <input type = "date" id = "datereceived1" name = "dr1" >
+                    <br>
                     <br>
                     <label for = "location1"> <b> <i>Update</i> Healthcare Professional or Clinic Site: </b></label>
                     <input type = "text" id = "location1" name = "site1" placeholder = "Enter Location">
@@ -120,6 +127,7 @@
                     <label for = "datereceived2"> <b> <i>Update</i> Date Received: </b></label>
                     <input type = "date" id = "datereceived2" name = "dr2" >
                     <br>
+                    <br>
                     <label for = "location2"> <b> <i>Update</i> Healthcare Professional or Clinic Site: </b></label>
                     <input type = "text" id = "location2" name = "site2" placeholder = "Enter Location">
                     <br>
@@ -132,8 +140,13 @@
                 </li>
                 
                 <li class= "list-group-item text-right" style = "background-color:#cc99ff">
-                    <input type = "submit" name = "login" value = "Log In">
+                    <label for = "admincheck"> <b> Updating An Admin? </b> </label>
+                    <input type = "checkbox" id = "admincheck" name = "updateAdmin" value = "update">
+                    <br>
+                    <input type = "submit" name = "update" value = "Update">
                     <input type = "reset">
+                    <br>
+                    <p><span style = "background-color:yellow;"><b>Note*</b> Will Only Update The Fields That Are Filled.</span></p>
                 </li>
                 <br>
                 

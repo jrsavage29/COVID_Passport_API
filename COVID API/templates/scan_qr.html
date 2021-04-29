@@ -22,6 +22,19 @@
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
+        <nav class="navbar navbar-expand-sm navbar-light" style = "background-color:#e3f2fd;">
+            
+            <a class = "navbar-brand" href = "#"> CPS </a>
+            
+            <ul class = "navbar-nav ml-auto">
+                <li class = "nav-item">
+                    <a style = "color:black" class = "nav-link " href = "http://localhost:3000/"><span class = "fas fa-sign-in-alt"></span> Log In </a>
+                </li>
+            <ul>
+
+            </ul>
+        </nav>
+
         <div class = "container">
             {% if error %}
             <div class = "alert alert-danger alert-dismissible ">
@@ -32,7 +45,10 @@
         </div>
         
         <h1 class = "text-center"> Place Your QR Code In Front of The Camera </h1>
-        
+        <br>
+        <br>
+        <h3 class = "text-center"> Sample QR Code </h3>
+        <img src ="/static/sample_qr_code.jpg" alt = "Sample QR Code" align = "middle" width = "500" height = "500">
 
     </body>
 </html>

@@ -24,29 +24,28 @@
         <![endif]-->
         <nav class="navbar navbar-expand-sm navbar-light" style = "background-color:#e3f2fd;">
             
-            <a class = "navbar-brand" href = "#"> CPS </a>
+            <a class = "navbar-brand" href = "http://localhost:3000/user-dashboard/{{username}}"> CPS </a>
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Home</a>
+                    <a class="nav-link" href="http://localhost:3000/user-dashboard/{{username}}">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Check Passport</a>
+                    <a class="nav-link" href="http://localhost:3000/passport-info/{{username}}">Check Passport</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Change Password</a>
+                    <a class="nav-link" href="http://localhost:3000/change-password/{{username}}">Change Password</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link " href="#"> Generate New QR Code </a>
+                    <a class="nav-link " href="http://localhost:3000/generate-new-QR/{{username}}"> Generate New QR Code </a>
                 </li>
             </ul>
             <ul class = "navbar-nav ml-auto">
                  <li class = "nav-item">
-                    <a style = "color:black" class = "nav-link " href = "#"><span class = "fas fa-mail-bulk"></span> Have an Issue? </a>
+                    <a style = "color:black" class = "nav-link " href = "http://localhost:3000/send-issue/{{username}}"><span class = "fas fa-envelope-open-text"></span> Have an Issue? </a>
                 </li>
                 <li class = "nav-item">
-                    <a style = "color:black" class = "nav-link " href = "#"><span class = "fas fa-door-open"></span> Logout </a>
+                    <a style = "color:black" class = "nav-link " href = "http://localhost:3000/logout"><span class = "fas fa-sign-out-alt"></span> Logout </a>
                 </li>
-            <ul>
 
             </ul>
         </nav>
@@ -61,6 +60,7 @@
         </div>
         
         <h1 class = "text-center"> This is Your New QR Code </h1>
+
 
     </body>
 </html>

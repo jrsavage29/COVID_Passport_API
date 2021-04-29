@@ -60,6 +60,27 @@
             {% endfor %}
         </div>
         <h1 class = "text-center"> Welcome To The Admin Dashboard </h1>
-
+        <br>
+        <br>
+        <h2>All Users In The System:</h2>
+        <br>
+        <div class = "container-fluid text-left">
+            {%for user, user_items in users.items() %}
+                <li class = "list-group-item">
+                    <p><b>Username:</b> {{user}} &ensp; <b>First Name:</b> {{user_items["FN"]}} &ensp; <b>Last Name:</b> {{user_items["LN"]}} </p>
+                    <br>
+                </li>
+            {% endfor %}
+            <br>
+            <br>
+            <h2>All Admins In The System:</h2>
+            <br>
+            {%for admin, admin_items in admins.items() %}
+                <li class = "list-group-item">
+                    <p><b>Username:</b> {{admin}} &ensp; <b>First Name:</b> {{admin_items["FN"]}} &ensp; <b>Last Name:</b> {{admin_items["LN"]}} </p>
+                    <br>
+                </li>
+            {% endfor %}
+        </div>
     </body>
 </html>
