@@ -7,15 +7,23 @@ from flask import redirect
 from flask import render_template
 from flask import session
 from flask import flash
+from flask_mail import Mail
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 import requests
 import json
 import os
+import smtplib
+from email.message import EmailMessage
 
 app = Flask(__name__)
 #in order to use session to keep the client-side sessions secure
 app.secret_key = os.urandom(16).hex()
+
+#email address that will be the sender (has 2 step verification setup so requires app passwords on google)
+email_address = 'jrsvt23@gmail.com' #learn about this process https://www.youtube.com/watch?v=JRCJ6RtE3xU
+email_pw = os.environ.get('jrsvt23_pw') #password for email was stored as an environment variable
+receiver_email = 'jamahl29@vt.edu'
 
 #use the session user to get the current user using the system and access their information
 
@@ -61,7 +69,7 @@ administrators = {
                 "FN" : "Jamahl", 
                 "MI" : "R.",
                 "LN" : "Savage",
-                "DOB" : "N/A"},
+                "DOB" : "1999-01-29"},
     "chance7" : {"PW":generate_password_hash("cha123"),
                 "FN" : "Chance", 
                 "MI" : "N.",
@@ -98,7 +106,6 @@ def login():
                 else:
                     error = 'Invalid username or password. Please try again!'
 
-        return render_template('login.html', error = error)
     else:
         if('user' in session and session['user'] in administrators.keys()):
             return redirect(f'/admin-dashboard/')
@@ -106,6 +113,8 @@ def login():
         elif('user' in session and session['user'] in users.keys()):
             username = session['user']
             return redirect(f'/user-dashboard/{username}')
+
+    return render_template('login.html', error = error)
 
 
 @app.route('/login-QR', methods = ['POST', 'GET']) #User can choose to be redirected back to the login screen if they no longer want to scan QR code
@@ -124,10 +133,17 @@ def display_users_QR():
 @app.route('/user-dashboard/<username>', methods = ['POST', 'GET']) #The main dashboard for after successfully logging in
 def dashboard(username):
     #dashboard will also show current covid statistics
+    #statistics thanks to the following article: https://medium.com/analytics-vidhya/novel-coronavirus-covid-19-tracker-app-using-flask-1fd08dc314b6
     if(not session.get('user')):
         return redirect('/')
     
-    return render_template('dashboard.html', username = username)
+    covid_data_content = requests.get("https://corona.lmao.ninja/v2/all")
+    covid_data = covid_data_content.json()
+    cases = "{:,}".format(covid_data['cases'])
+    recovered = "{:,}".format(covid_data['recovered'])
+    deceased = "{:,}".format(covid_data['deaths'])
+
+    return render_template('dashboard.html', username = username, cases = cases, recovered = recovered, deceased = deceased)
     
 
 @app.route('/admin-dashboard/', methods = ['POST', 'GET']) #The main dashboard for after successfully logging in (for admins)
@@ -159,7 +175,7 @@ def newUser():
                                         "DOB" : request.form.get("dob"),}
 
                 administrators[new_user] = new_admin_dict_entry
-                success = f"Successfully Added Admin {new_user} To The Service!"
+                success = f"Successfully added admin {new_user} to the service!"
 
             #else the account will be made as a regular user account
             elif(not request.form.get("MakeAdmin") and request.form.get("new_user") not in users):
@@ -179,7 +195,7 @@ def newUser():
                                         "QR" : "insert QR generator function",}
 
                 users[new_user] = new_user_dict_entry
-                success = f"Successfully Added User {new_user} To The Service!"
+                success = f"Successfully added user {new_user} to the service!"
 
             else:
                 error = 'That user already exists! Try using a different username.'
@@ -198,11 +214,33 @@ def change_password(username):
     #if old password doesn't match before assigning new password then send an error
     #if new password is the same as the old password, then send error about it
     error = None
+    success = None
 
     if(not session.get('user')):
         return redirect('/')
 
-    return render_template('new_password.html', username = username, error = error )
+    if(request.method == 'POST'):
+        old_pass = request.form.get("oldPW")
+        new_pass = request.form.get("newPW")
+
+        #Make sure the user typed in their correct current password
+        if(check_password_hash(users.get(username).get("PW"), old_pass)):
+            if(not request.form.get("newPW") ):
+                error = "You Did Not Enter A New Password!"
+
+            elif(old_pass == new_pass):
+                error = "Your new password can not be the same as your old password!"
+
+            else:
+                new_pass = generate_password_hash(new_pass)
+                users[username]["PW"] = new_pass
+                success = "Your password has been changed successfully!"
+
+        #else they must have incorrectly typed in their current password
+        else:
+            error = "Your old password does not match what is in the system!"
+
+    return render_template('new_password.html', username = username, error = error, success = success )
 
 @app.route('/admin-update/', methods = ['POST', 'GET']) #for admin to update a user's information
 def update_info():
@@ -216,7 +254,7 @@ def update_info():
         query_user = request.form.get("query_user")
         #updating info for an admin
         if(request.form.get("updateAdmin")):
-            if( query_user in administrators):
+            if( query_user in administrators and query_user != "jamahl29"):
                 if(request.form.get("fname")):
                     administrators[query_user]["FN"] = request.form.get("fname")
 
@@ -232,9 +270,13 @@ def update_info():
                 if(request.form.get("new_passw")):
                     administrators[query_user]["PW"] = generate_password_hash(request.form.get("new_passw"))
 
-                success = f"Admin {query_user} Has Had Their Information Updated!"
+                success = f"Admin {query_user} has had their information updated!"
+            
+            elif(query_user in administrators and query_user == "jamahl29"):
+                error = f"You can not edit the head admin {query_user}!"
+            
             else:
-                error = f"Admin {query_user} Is Not In This System!"
+                error = f"Admin {query_user} is not in this system!"
 
         #else updating info regular user
         else:
@@ -276,22 +318,54 @@ def update_info():
                 if(request.form.get("notes")):
                     users[query_user]["Notes"] = request.form.get("notes")
                     
-                success = f"User {query_user} Has Had Their Information Updated!"
+                success = f"User {query_user} has had their information updated!"
             
             else:
-               error = f"User {query_user} Is Not In This System!" 
+               error = f"User {query_user} is not in this system!" 
 
     return render_template('admin_update_user.html', error = error, success = success)
 
 @app.route('/admin-delete/', methods = ['POST', 'GET']) #for admins to delete a user from the system
 def delete_user():
+    error = None
+    success = None
     #if admin deletes themselves, make sure to pop session user as well so they go back to the login page
     if(not session.get('user')):
         return redirect('/')
-    if(request.method == 'POST'):
-        pass
 
-    return render_template('admin_delete_user.html')
+    if(request.method == 'POST'):
+        query_user = request.form.get("query_user")
+        #deleting an admin
+        if(request.form.get("deleteAdmin")):
+            
+            #You can not delete Admin jamahl29 under no circumstance
+            if(query_user == "jamahl29"):
+                error = f"You can not delete the head admin {query_user}!"
+
+            #if the admin is not deleting themselves from the system
+            elif( query_user in administrators and query_user != session.get('user')):
+                administrators.pop(query_user)
+                success = f"Admin {query_user} was successfully deleted."
+
+
+            #the admin is deleting themself from the system
+            elif(query_user in administrators and query_user == session.get('user')):
+                administrators.pop(query_user)
+                session.pop('user')
+                success = f"Admin {query_user} was successfully deleted."
+
+            else:
+                error = f"Admin {query_user} is not in this system!"
+                
+        #else deleting normal user
+        else:
+            if( query_user in users):
+                users.pop(query_user)
+                success = f"User {query_user} was successfully deleted."
+            else:
+                error = f"User {query_user} is not in this system!"
+
+    return render_template('admin_delete_user.html', error = error, success = success)
 
 @app.route('/admin-search/', methods = ['POST', 'GET']) #for admins to search for a user 
 def search_user():
@@ -300,45 +374,146 @@ def search_user():
     if(not session.get('user')):
         return redirect('/')
 
+    if(request.method == 'POST'):
+        query_user = request.form.get("query_user")
+        #searching an admin
+        if(request.form.get("searchAdmin")):
+            if(query_user in administrators):
+                flash(f'Results found for admin {query_user}!')
+                return redirect(f'/admin-search-results/{query_user}')
+
+            else:
+                error = f"Admin {query_user} Does not exist in this system!"
+            
+        #else searching regular users
+        else:
+            if(query_user in users):
+                flash(f'Results found for user {query_user}!')
+                return redirect(f'/admin-search-results/{query_user}')
+            else:
+                error = f"User {query_user} does not exist in this system!"
+
     return render_template('admin_search_users.html', error = error)
 
-@app.route('/admin-search-results/{username}', methods = ['POST', 'GET']) #for admins to display search results in the system
+@app.route('/admin-search-results/<username>', methods = ['POST', 'GET']) #for admins to display search results in the system
 def search_user_results(username):
     results = None
+    is_admin = False
+
     #if user presses Go Back button, redirect back to admin-search
     if(not session.get('user')):
         return redirect('/')
+    
+    if(request.method == 'POST'):
+        if(request.form.get("go back")):
+            return redirect("/admin-search/")
 
-    return render_template('admin_display_search_results.html', results = results)
+    if(username in users):  
+        results = users[username]
+    else:
+        results = administrators[username]
+        is_admin = True
+
+    return render_template('admin_display_search_results.html', user_info = results, username = username, is_admin = is_admin)
 
 @app.route('/generate-new-QR/<username>', methods = ['POST', 'GET']) #register users' new QR code (User must have credentials first!)
 def new_QR(username):
     if(not session.get('user')):
         return redirect('/')
 
+    if(request.method == 'POST'):
+        flash("New QR code was successfully generated!")
+        return redirect(f'/display-new-QR/{username}')
+
     return render_template('generate_qr.html', username = username)
 
 @app.route('/display-new-QR/<username>', methods = ['POST', 'GET']) #displays users' new QR code after registering new QR code
 def display_new_QR(username):
+    
+    QR_code = None
+
     if(not session.get('user')):
         return redirect('/')
 
-    return render_template('display_new_qr.html', username = username)
+    return render_template('display_new_qr.html', username = username, QR_code = QR_code)
 
 @app.route('/send-issue/<username>', methods = ['POST', 'GET']) #Users can send an email to the admin
 def user_send_email(username):
-    msg = None
+    
+    success = None
+    error = None
 
     if(not session.get('user')):
         return redirect('/')
-    
-    return render_template('send_issue.html', username = username, msg = msg)
+
+    if(request.method == 'POST'):
+        #check that the user entered in all of the required fields
+        if(request.form.get("email") and request.form.get("msg")):
+            first_name = users[username]["FN"]
+            last_name = users[username]["LN"]
+            email = request.form.get("email")
+            msg = request.form.get("msg")
+            
+            email_message = EmailMessage()
+            email_message['Subject'] = f'Query from Help Page from username \"{username}\"'
+            email_message['From'] = email_address
+            email_message['To'] = receiver_email
+            email_message.set_content(f"First Name: {first_name} \nLast Name: {last_name} \nTheir Email Address: {email} \n\nMessage: \n{msg}")
+
+            #using flask-mail to send the email to jrsvt23@gmail.com
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+                smtp.login(email_address, email_pw)
+                
+                smtp.send_message(email_message)
+
+            success = "Your email has been sent to the admins successfully! We will respond shortly."
+
+        #send error about user not filling in all required fields
+        else:
+            error = "One or more of the mandatory fields are not filled!"
+
+
+    return render_template('send_issue.html', username = username, error = error, success = success)
 
 @app.route('/get-help/', methods = ['POST', 'GET']) #Users can send an email to the admin
 def send_help_email():
-    msg = None
-    
-    return render_template('get_help.html', msg = msg)
+    success = None
+    error = None
+
+    if(request.method == 'POST'):
+        #check that the user entered in all of the required fields
+        if(request.form.get("fname") and request.form.get("lname") and request.form.get("email") and request.form.get("msg")):
+            first_name = request.form.get("fname")
+            last_name = request.form.get("lname")
+            email = request.form.get("email")
+            msg = request.form.get("msg")
+            username = ""
+
+            #check if the user entered in their user (This is optional)
+            if(request.form.get("user")):
+                username = request.form.get("user")
+            else:
+                username = "Not Applicable"
+            
+            email_message = EmailMessage()
+            email_message['Subject'] = f'Message from Send Issue Page from username \"{username}\"'
+            email_message['From'] = email_address
+            email_message['To'] = receiver_email
+            email_message.set_content(f"First Name: {first_name} \nLast Name: {last_name} \nTheir Email Address: {email} \n\nMessage: \n{msg}")
+
+            #using flask-mail to send the email to jrsvt23@gmail.com
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+                smtp.login(email_address, email_pw)
+                
+                smtp.send_message(email_message)
+
+            success = "Your email has been sent to the admins successfully! We will respond shortly."
+
+        #send error about user not filling in all required fields
+        else:
+            error = "One or more of the mandatory fields are not filled!"
+
+    return render_template('get_help.html', success = success, error = error)
 
 
 @app.route('/logout', methods = ['POST', 'GET'])

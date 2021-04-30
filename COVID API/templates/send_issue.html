@@ -51,10 +51,19 @@
         </nav>
 
         <div class = "container">
-            {% if msg %}
-            <div class = "alert alert-danger alert-dismissible ">
+            {% if error %}
+            <div class = "alert alert-danger alert-dismissible fade show">
                 <button type = "button" class="close" data-dismiss = "alert">&times;</button>
-                {{msg}}
+                {{error}}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class = "container">
+            {% if success %}
+            <div class = "alert alert-success alert-dismissible fade show">
+                <button type = "button" class="close" data-dismiss = "alert">&times;</button>
+                {{success}}
             </div>
             {% endif %}
         </div>
@@ -66,22 +75,16 @@
                 <li class= "list-group-item" style = "background-color:#cc99ff">
                     <h2><b>Enter Your Contact Info:</b></h2>
                     <br>
-                    <label for = "firstname"> <b> First Name: </b></label>
-                    <input type = "text" id = "firstname" name = "fname" placeholder = "First Name">
-                    
-                    <label for = "lastname"> <b> Last Name: </b></label>
-                    <input type = "text" id = "lastname" name = "lname" placeholder = "Last Name">
-                    <br>
-                    <br>
-                    <label for = "emailaddress"> <b> Your Email: </b></label>
+                    <label for = "emailaddress"> <b> <span style = "color:red">*</span>Your Email: </b></label>
                     <input type = "text" id = "emailaddress" name = "email" size = "40" placeholder = "e.g. example@gmail.com">
                     <br>
                     <br>
-                    <label for = "Message"> <b> Message: </b></label>
+                    <label for = "Message"> <b> <span style = "color:red">*</span>Message: </b></label>
                     <br>
                     <textarea  id = "Message" name = "msg" rows = "6" cols ="80" placeholder = "Enter your message here..."></textarea>
                     <br>
                     <br>
+                    <p><b>*Note: "<span style = "color:red">*</span>" Means Those Fields Are Required.</b></p>
                     <input type = "submit" name = "send" value = "Submit Email">
                     <input type = "reset" value = "Reset Form">
 

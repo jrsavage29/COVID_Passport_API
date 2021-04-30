@@ -51,23 +51,61 @@
 
             </ul>
         </nav>
+
+
+        <div class = "container ">
+            {% for message in get_flashed_messages() %}
+            <div class = "alert alert-success alert-dismissible fade show">
+                <button type = "button" class="close" data-dismiss = "alert">&times;</button>
+                {{ message }}
+            </div> 
+            {% endfor %}
+        </div>
         
         <h1 class = "text-center"> Welcome To The Admin Dashboard for Searching Users </h1>
         <br>
         <h2> Here Are Your Search Results: </h2>
         <br>
-        <div class = "container-fluid text-left">
-            {%for result  in results%}
-            
-                <li class = "list-group-item">
-                    
+        {%if not is_admin%}
+            <h2 class = "text-center"> User {{username}}'s COVID Passport Information </h2>
+        {% else %}
+            <h2 class = "text-center"> Admin {{username}}'s Information </h2>
+        {% endif %}
+        
+        <div class = "container-fluid text-left" >
+            <li class= "list-group-item" style = "background-color:#cc99ff">
+                <h3><b> User Basic Information:</b></h3>
+                <br>
+                <p> <b> First Name: </b> {{user_info["FN"]}} &ensp; <b> Middle Initial: </b> {{user_info["MI"]}} &ensp; <b> Last Name: </b> {{user_info["LN"]}}</p>
+                <br>
+                <p> <b> Date of Birth: </b> {{user_info["DOB"]}} </p>
+                <br>
+            </li>
+            {% if not is_admin %}
+                <li class= "list-group-item" style = "background-color:#cc99ff">
+                    <h3> <b> 1st Dose Vaccination Info:</b> </h3>
+                    <br>
+                    <p> <b> Product Name/ Manufacturer: </b>  {{user_info["Prod1"]}} &ensp; <b> Date Received: </b> {{user_info["DR1"]}} </p>
+                    <br>
+                    <p> <b> Healthcare Professional or Clinic Site: </b> {{user_info["Site1"]}} </p>
+                    <br>
                 </li>
-           
-            {% endfor %}
-         </div>
-
-        <div class = "container-fluid" >
-            <form id = "AddUser" action = "http://localhost:3000/admin-search-results/{username}" method = "post">
+                <li class= "list-group-item" style = "background-color:#cc99ff">
+                    <h3> <b> 2nd Dose Vaccination Info:</b> </h3>
+                    <br>
+                    <p> <b> Product Name/ Manufacturer: </b>  {{user_info["Prod2"]}} &ensp; <b> Date Received: </b> {{user_info["DR2"]}} </p>
+                    <br>
+                    <p> <b> Healthcare Professional or Clinic Site: </b> {{user_info["Site2"]}} </p>
+                    <br>
+                </li>
+                <li class= "list-group-item" style = "background-color:#cc99ff">
+                    <p><b> Notes: </b></p>
+                    
+                    <p> {{user_info["Notes"]}} </p>
+                </li>
+                
+            {% endif %}
+            <form id = "searchResults" action = "http://localhost:3000/admin-search-results/{username}" method = "post">
                 
                 <li class= "list-group-item text-right" style = "background-color:#cc99ff">
                     <input type = "submit" name = "go back" value = "Go Back">
@@ -75,6 +113,7 @@
                 <br>
                 
             </form>
+
         </div>
 
     </body>

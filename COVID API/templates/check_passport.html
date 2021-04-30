@@ -36,7 +36,7 @@
                     <a class="nav-link" href="http://localhost:3000/change-password/{{username}}">Change Password</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link " href="http://localhost:3000/new-QR/{{username}}"> Generate New QR Code </a>
+                    <a class="nav-link " href="http://localhost:3000/generate-new-QR/{{username}}"> Generate New QR Code </a>
                 </li>
             </ul>
             <ul class = "navbar-nav ml-auto">
@@ -50,7 +50,7 @@
             </ul>
         </nav>
         
-        <h1 class = "text-center"> Your COVID Passport Information </h1>
+        <h1 class = "text-center"> User {{username}}'s COVID Passport Information </h1>
         
         <div class = "container-fluid text-left" >
             <li class= "list-group-item" style = "background-color:#cc99ff">
@@ -79,7 +79,7 @@
             </li>
             <li class= "list-group-item" style = "background-color:#cc99ff">
                 <p><b> Notes: </b></p>
-                <br>
+                
                 <p> {{user_info["Notes"]}} </p>
             </li>
             
