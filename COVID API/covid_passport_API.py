@@ -7,14 +7,20 @@ from flask import redirect
 from flask import render_template
 from flask import session
 from flask import flash
-from flask_mail import Mail
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 import requests
 import json
+import random
+import time
+import string
 import os
 import smtplib
 from email.message import EmailMessage
+from pyzbar import pyzbar
+import cv2
+import pyqrcode
+from PIL import Image
 
 app = Flask(__name__)
 #in order to use session to keep the client-side sessions secure
@@ -41,7 +47,7 @@ users = {
                 "DR2" : "N/A",
                 "Site2" : "NRHC",
                 "Notes" : "This is filler!",
-                "QR" : "N/A"},
+                "QR" : "randomstring"},
     "tempUser123" : {"PW" : generate_password_hash("pass123"), 
                 "FN" : "Roger", 
                 "MI" : "J.",
@@ -54,15 +60,10 @@ users = {
                 "DR2" : "N/A",
                 "Site2" : "NRHC",
                 "Notes" : "This is filler!",
-                "QR" : "N/A"},
+                "QR" : "randomString2"},
 }
 
 #store the bytes version of QR code as the key and the users' information as the value
-
-QRs = {
-    "randomqrstring" : {}
-
-}
 
 administrators = {
     "jamahl29" : {"PW":generate_password_hash("jam123"),
@@ -77,6 +78,62 @@ administrators = {
                 "DOB" : "N/A"}
 }
 
+#used for deleting the qr code image in the /static folder
+def delete_pngs():
+    #change your path for different system
+    folder_path = (r'C:/Users/jrsav/Documents/COVID API/static')
+    
+    test = os.listdir(folder_path)
+    #taking a loop to remove all the images
+    #using ".png" extension to remove only png images
+    #using os.remove() method to remove the files
+    for images in test:
+        if images.endswith(".png"):
+            os.remove(os.path.join(folder_path, images))
+
+#used for generating the strings used to make QR codes
+def random_string(length = 15):
+    character_set = string.ascii_letters
+    generated_string =  ''.join(random.choice(character_set) for i in range(length))
+    #concatenate a time stamp to esure string will always be unique
+    time_stamp = str(time.time())
+    return generated_string + time_stamp
+
+def read_barcodes(frame):
+    qr = pyzbar.decode(frame)
+    QRText = ""
+    for qr in qr:
+        x, y, w, h = qr.rect
+        QRText = QRText.replace("", qr.data.decode('utf-8'))
+        print(QRText)
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+    return frame, QRText
+
+
+def createUserQR(name):
+    qr = pyqrcode.create(name)
+    qr.png(f"static/{name}.png", scale=8)
+    print('Created QR code')
+
+
+def decodeUserQR(QRFile):
+    data = pyzbar.decode(Image.open(QRFile))
+    return data
+
+
+def cameraReadQR():
+    camera = cv2.VideoCapture(0)
+    ret, frame = camera.read()
+    while ret:
+        ret, frame = camera.read()
+        frame, text = read_barcodes(frame)
+        cv2.imshow('Barcode reader', frame)
+        # Get rid of text != "" to remove camera turning off after getting a QR code
+        if (cv2.waitKey(1) == ord("q")) or text != "":
+            break
+    camera.release()
+    cv2.destroyAllWindows()
+    return text
 
 @app.route('/', methods = ['GET', 'POST']) #enter correct credentials to enter site
 def login():
@@ -122,13 +179,28 @@ def detect_QR():
     error = None
     #flash message when Qr is detected
     #send error when Qr code is wrong
+    if(request.method == 'POST'):
+        readString = cameraReadQR()
+        print(readString)
+        for username in users:
+            if(users[username]["QR"] == readString):
+                flash("Your QR Code was successfully scanned!")
+                return redirect(f"/display-passport/{username}")
+
+            else:
+                error = "Your QR code is either invalid or couldn't be read properly!"    
+
+
     return render_template('scan_qr.html', error = error)
 
-@app.route('/display-passport', methods = ['POST', 'GET'])#If user passed the qr code scanner, their passport is displayed
-def display_users_QR():
+@app.route('/display-passport/<username>', methods = ['POST', 'GET'])#If user passed the qr code scanner, their passport is displayed
+def display_users_QR(username):
+    user_info = users[username]
     #have option to return back to login screen
+    if(request.method == 'POST'):
+        return redirect('/')
 
-    return render_template('display_qr_passport.html', QRs = QRs)
+    return render_template('display_qr_passport.html', user_info = user_info, username = username)
 
 @app.route('/user-dashboard/<username>', methods = ['POST', 'GET']) #The main dashboard for after successfully logging in
 def dashboard(username):
@@ -192,7 +264,7 @@ def newUser():
                                         "DR2" : request.form.get("dr2"),
                                         "Site2" : request.form.get("site2"),
                                         "Notes" : request.form.get("notes"),
-                                        "QR" : "insert QR generator function",}
+                                        "QR" : random_string(),}
 
                 users[new_user] = new_user_dict_entry
                 success = f"Successfully added user {new_user} to the service!"
@@ -418,24 +490,39 @@ def search_user_results(username):
 
 @app.route('/generate-new-QR/<username>', methods = ['POST', 'GET']) #register users' new QR code (User must have credentials first!)
 def new_QR(username):
+    qr_img = None
+
     if(not session.get('user')):
         return redirect('/')
 
     if(request.method == 'POST'):
         flash("New QR code was successfully generated!")
+        #generate new string and store in the user's dictionary of information
+        users[username]["QR"] = random_string()
+        
         return redirect(f'/display-new-QR/{username}')
+    
+    
+    #created a new userQR.png file with the relevant QR code
+    createUserQR(users[username]["QR"])
+    filename = users[username]["QR"]
+    qr_img = f"/static/{filename}.png"
 
-    return render_template('generate_qr.html', username = username)
+    return render_template('generate_qr.html', username = username, qr_img = qr_img)
 
 @app.route('/display-new-QR/<username>', methods = ['POST', 'GET']) #displays users' new QR code after registering new QR code
 def display_new_QR(username):
-    
-    QR_code = None
+    qr_img = None
 
     if(not session.get('user')):
         return redirect('/')
 
-    return render_template('display_new_qr.html', username = username, QR_code = QR_code)
+    #display the newly generated qr code
+    createUserQR(users[username]["QR"])
+    filename = users[username]["QR"]
+    qr_img = f"/static/{filename}.png"
+
+    return render_template('display_new_qr.html', username = username, qr_img = qr_img)
 
 @app.route('/send-issue/<username>', methods = ['POST', 'GET']) #Users can send an email to the admin
 def user_send_email(username):
@@ -518,6 +605,7 @@ def send_help_email():
 
 @app.route('/logout', methods = ['POST', 'GET'])
 def logout():
+    delete_pngs()
     session.pop('user') 
     return render_template('logout.html')
 
