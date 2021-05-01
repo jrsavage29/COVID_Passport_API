@@ -8,6 +8,6 @@ Jamahl:
 -
 
 Chance:
--
--
--
+- Created QR code reading/generating with file
+- Created QR code reading from camera
+- Created database insert, update, and delete
