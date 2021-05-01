@@ -50,22 +50,8 @@ users = {
               "Site2": "NRHC",
               "Notes": "This is filler!",
               "QR": "randomstring"},
-    "tempUser123": {"PW": generate_password_hash("pass123"),
-                    "FN": "Roger",
-                    "MI": "J.",
-                    "LN": "Kirk",
-                    "DOB": "N/A",
-                    "Prod1": "Phizer",
-                    "DR1": "N/A",
-                    "Site1": "NRHC",
-                    "Prod2": "Phizer",
-                    "DR2": "N/A",
-                    "Site2": "NRHC",
-                    "Notes": "This is filler!",
-                    "QR": "randomString2"},
+    
 }
-
-# store the bytes version of QR code as the key and the users' information as the value
 
 administrators = {
     "jamahl29": {"PW": generate_password_hash("jam123"),
@@ -89,7 +75,7 @@ adminDB = pymongo.MongoClient().Admins
 # used for deleting the qr code image in the /static folder
 def delete_pngs():
     # change your path for different system
-    folder_path = r'C:/Users/crmes/PycharmProjects/COVID_Passport_API-main/COVID_Passport_API-main/COVID API/static'
+    folder_path = (r'C:/Users/jrsav/Documents/COVID API/static')
     
     test = os.listdir(folder_path)
     # taking a loop to remove all the images
@@ -174,7 +160,7 @@ def deleteFromDB(db, col, userToRemove):
 
 
 # enter correct credentials to enter site
-@app.route('/', methodss=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     error = None
 
@@ -523,6 +509,7 @@ def new_QR(username):
         flash("New QR code was successfully generated!")
         # generate new string and store in the user's dictionary of information
         users[username]["QR"] = random_string()
+        updateDB(userDB, "Info", users, username)
         return redirect(f'/display-new-QR/{username}')
 
     # created a new userQR.png file with the relevant QR code
@@ -632,4 +619,30 @@ def logout():
 
 
 if __name__ == "__main__":
+    client = pymongo.MongoClient()
+    dbnames = client.list_database_names()
+
+    #check to see if the user and admin databases exists. If not, then we use the default information in the dictionaries called users and administrators
+    #if the databases exists, then we will overwrite the default dictionaries with the information held in the database
+    if('Users' in dbnames):
+        userDict = userDB["Info"]
+        id_list = []
+        for _ids in userDict.find({}, {"PW": 0, "FN":0, "MI":0, "LN":0, "DOB":0, "Prod1":0, "DR1":0, "Site1":0, "Prod2":0, "DR2":0, "Site2":0, "Notes":0, "QR":0}):
+            id_list.append(_ids)   
+        
+        for i in range(len(id_list)):
+            username = id_list[i]["_id"]
+            users[username] = userDict.find_one({"_id":username}, {"_id":0})
+        
+    
+    if('Admins' in dbnames):
+        userDict = adminDB["Info"]
+        id_list = []
+        for _ids in userDict.find({}, {"PW": 0, "FN":0, "MI":0, "LN":0, "DOB":0}):
+            id_list.append(_ids)
+
+        for i in range(len(id_list)):
+            username = id_list[i]["_id"]
+            administrators[username] = userDict.find_one({"_id":username}, {"_id":0})
+
     app.run(host='localhost', port=3000, debug=True)
