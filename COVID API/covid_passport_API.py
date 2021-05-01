@@ -163,7 +163,7 @@ def insertIntoDB(db, col, userDict):
 
 # update a current user in the database
 # need the database, the collection, the user dictionary, and the user to update
-def updateUserDB(db, col, userDict, userToUpdate):
+def updateDB(db, col, userDict, userToUpdate):
     db[col].replace_one({"_id": userToUpdate}, userDict[userToUpdate])
 
 
@@ -345,7 +345,7 @@ def change_password(username):
                 new_pass = generate_password_hash(new_pass)
                 users[username]["PW"] = new_pass
                 success = "Your password has been changed successfully!"
-                updateUserDB(userDB, "Info", users, username)
+                updateDB(userDB, "Info", users, username)
         # else they must have incorrectly typed in their current password
         else:
             error = "Your old password does not match what is in the system!"
@@ -378,7 +378,7 @@ def update_info():
                 if request.form.get("new_passw"):
                     administrators[query_user]["PW"] = generate_password_hash(request.form.get("new_passw"))
                 success = f"Admin {query_user} has had their information updated!"
-                updateUserDB(adminDB, "Info", administrators, query_user)
+                updateDB(adminDB, "Info", administrators, query_user)
             elif query_user in administrators and query_user == "jamahl29":
                 error = f"You can not edit the head admin {query_user}!"
             else:
@@ -411,7 +411,7 @@ def update_info():
                 if request.form.get("notes"):
                     users[query_user]["Notes"] = request.form.get("notes")
                 success = f"User {query_user} has had their information updated!"
-                updateUserDB(userDB, "Info", users, query_user)
+                updateDB(userDB, "Info", users, query_user)
             else:
                 error = f"User {query_user} is not in this system!"
 
