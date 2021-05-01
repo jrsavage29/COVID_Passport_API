@@ -151,26 +151,26 @@ def cameraReadQR():
 
 
 # insert into the database
-# need the database, the document, the user dictionary
-def insertIntoDB(db, doc, userDict):
+# need the database, the collection, the user dictionary
+def insertIntoDB(db, col, userDict):
     for username in userDict:
         # check if the ID already exists
-        if db[doc].count_documents({"_id": username}) == 0:
+        if db[col].count_documents({"_id": username}) == 0:
             # create a unique ID
             userDict[username]['_id'] = username
-            db[doc].insert_one(userDict[username])
+            db[col].insert_one(userDict[username])
 
 
 # update a current user in the database
-# need the database, the document, the user dictionary, and the user to update
-def updateUserDB(db, doc, userDict, userToUpdate):
-    db[doc].replace_one({"_id": userToUpdate}, userDict[userToUpdate])
+# need the database, the collection, the user dictionary, and the user to update
+def updateUserDB(db, col, userDict, userToUpdate):
+    db[col].replace_one({"_id": userToUpdate}, userDict[userToUpdate])
 
 
 # remove a user from the database
-# need the database, the document, and the user to remove
-def deleteFromDB(db, doc, userToRemove):
-    db[doc].delete_one({"_id": userToRemove})
+# need the database, the collection, and the user to remove
+def deleteFromDB(db, col, userToRemove):
+    db[col].delete_one({"_id": userToRemove})
 
 
 # enter correct credentials to enter site
